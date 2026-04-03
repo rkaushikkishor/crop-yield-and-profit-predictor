@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Agriculture Yield & Profit Predictor</title>
+    <!-- Modern Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* Futuristic, vibrant color palette */
+            --bg-grad-1: #061e24;
+            --bg-grad-2: #143b44;
+            --bg-grad-3: #0f595e;
+            --primary: #00ff88;
+            --secondary: #00e1ff;
+            --accent: #ffd900;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --text: #ffffff;
+            --text-muted: #a3c2d1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-grad-1), var(--bg-grad-2), var(--bg-grad-3));
+            background-size: 200% 200%;
+            animation: gradientMove 15s ease infinite;
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Animated Background Particles */
+        .particles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(0, 255, 136, 0.4) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0) rotate(0deg); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(-20vh) scale(1) rotate(360deg); opacity: 0; }
+        }
+
+        /* Main Container & Glassmorphism */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 50px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+            animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Typography */
+        h1 {
+            text-align: center;
+            font-size: 3.2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(120deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 4px 20px rgba(0, 255, 136, 0.2);
+            font-weight: 800;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 50px;
+            font-size: 1.2rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        /* Form Inputs */
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--secondary);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group input {
+            background: rgba(0, 0, 0, 0.25);
+            border: 2px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 16px 20px;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            outline: none;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3), inset 0 2px 5px rgba(0,0,0,0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Predict Button */
+        .btn-predict {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto;
+            padding: 20px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #000;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+            z-index: 1;
+        }
+
+        .btn-predict::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            transition: left 0.6s ease;
+            z-index: -1;
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 15px 35px rgba(0, 255, 136, 0.6);
+            letter-spacing: 1px;
+        }
+
+        .btn-predict:hover::before {
+            left: 100%;
+        }
+
+        /* Loading Animation */
+        .loader-container {
+            display: none;
+            text-align: center;
+            margin: 40px 0;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 6px solid rgba(0, 255, 136, 0.1);
+            border-top-color: var(--primary);
+            border-right-color: var(--secondary);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Output Section */
+        #results-section {
+            display: none;
+            margin-top: 60px;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .announcement {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 50px;
+            color: var(--text);
+            text-shadow: 0 0 20px rgba(255, 217, 0, 0.3);
+            background: var(--glass-bg);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            display: inline-block;
+            width: 100%;
+        }
+
+        .announcement .highlight {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .crop-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 35px 25px;
+            text-align: center;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .crop-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at top right, rgba(255,255,255,0.1), transparent 50%);
+            pointer-events: none;
+        }
+
+        .crop-card:hover {
+            transform: translateY(-15px) scale(1.03);
+            background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(0,0,0,0.25));
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .crop-card.best {
+            border: 2px solid var(--accent);
+            background: linear-gradient(145deg, rgba(255,217,0,0.08), rgba(0,0,0,0.3));
+            box-shadow: 0 0 30px rgba(255, 217, 0, 0.2), inset 0 0 20px rgba(255, 217, 0, 0.1);
+            z-index: 2;
+        }
+
+        .crop-card.best::after {
+            content: '🏆 TOP CHOICE';
+            position: absolute;
+            top: 25px; right: -40px;
+            background: linear-gradient(90deg, #ff9900, var(--accent));
+            color: #000;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 8px 45px;
+            transform: rotate(45deg);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .card-icon {
+            font-size: 4.5rem;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));
+            transition: transform 0.3s ease;
+        }
+
+        .crop-card:hover .card-icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .card-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: var(--text);
+            letter-spacing: 1px;
+        }
+
+        .card-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-size: 1.05rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+
+        .stat-value.profit {
+            color: var(--primary);
+            font-size: 1.3rem;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+        }
+
+        /* Animated Progress Bars */
+        .progress-bg {
+            background: rgba(0,0,0,0.4);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0.1), rgba(255,255,255,0.5), rgba(255,255,255,0.1));
+            animation: shimmer 2s infinite linear;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .pb-yield { background: linear-gradient(90deg, #00b8ff, var(--primary)); }
+        .pb-profit { background: linear-gradient(90deg, #ff8c00, var(--accent)); }
+
+        /* Chart Section */
+        .chart-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 24px;
+            padding: 40px 20px;
+            margin-top: 40px;
+            border: 1px solid var(--glass-border);
+            height: 450px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.4rem; }
+            .glass-panel { padding: 30px 20px; border-radius: 20px; }
+            .announcement { font-size: 1.5rem; }
+            .crop-card.best::after { top: 15px; right: -45px; font-size: 0.7rem; }
+            .chart-container { height: 350px; padding: 20px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Particle Background -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="glass-panel">
+            <h1>Smart Agriculture Predictor</h1>
+            <p class="subtitle">AI-Driven Yield & Profit Estimation for 1 Acre Land</p>
+
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="rainfall">🌧️ Rainfall (mm)</label>
+                    <input type="number" id="rainfall" placeholder="e.g. 120" value="120" min="0">
+                </div>
+                <div class="input-group">
+                    <label for="temperature">🌡️ Temperature (°C)</label>
+                    <input type="number" id="temperature" placeholder="e.g. 26" value="26" min="-10" max="60">
+                </div>
+                <div class="input-group">
+                    <label for="soilph">🧪 Soil pH</label>
+                    <input type="number" id="soilph" placeholder="e.g. 6.5" value="6.5" min="0" max="14" step="0.1">
+                </div>
+            </div>
+
+            <button class="btn-predict" onclick="runPrediction()">
+                Generate Prediction Insights ✨
+            </button>
+
+            <div class="loader-container" id="loader">
+                <div class="loader"></div>
+                <p style="margin-top: 20px; color: var(--primary); font-size: 1.2rem; font-weight: 600; letter-spacing: 1px;">Processing agricultural data...</p>
+            </div>
+
+            <div id="results-section">
+                <div class="announcement" id="announcement">
+                    <!-- Injected via JS -->
+                </div>
+                
+                <div class="cards-grid" id="cards-container">
+                    <!-- Cards injected via JS -->
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="profitChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Setup Animated Background Particles
+        const particlesContainer = document.getElementById('particles');
+        const particleCount = window.innerWidth < 768 ? 15 : 30; // Responsive amount
+
+        for (let i = 0; i < particleCount; i++) {
+            let p = document.createElement('div');
+            p.className = 'particle';
+            let size = Math.random() * 80 + 20; // 20px to 100px
+            p.style.width = size + 'px';
+            p.style.height = size + 'px';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.animationDuration = (Math.random() * 15 + 10) + 's';
+            p.style.animationDelay = Math.random() * 10 + 's';
+            particlesContainer.appendChild(p);
+        }
+
+        // 2. Crop Data Library
+        // maxYield: kg per acre. price: rupees per kg.
+        const crops = [
+            { name: "Rice", icon: "🌾", optimal: { rain: [100, 200], temp: [20, 30], ph: [6, 7] }, price: 22, maxYield: 2200 },
+            { name: "Maize", icon: "🌽", optimal: { rain: [50, 100], temp: [21, 27], ph: [5.8, 7] }, price: 18, maxYield: 1500 },
+            { name: "Millet", icon: "🌿", optimal: { rain: [30, 60], temp: [25, 35], ph: [5.5, 7.5] }, price: 28, maxYield: 800 },
+            { name: "Cotton", icon: "☁️", optimal: { rain: [50, 100], temp: [21, 30], ph: [6, 8] }, price: 65, maxYield: 500 },
+            { name: "Wheat", icon: "🌱", optimal: { rain: [40, 60], temp: [10, 25], ph: [6, 7.5] }, price: 24, maxYield: 1200 }
+        ];
+
+        let chartInstance = null;
+
+        // 3. Logic for calculating yield factor based on conditions
+        function calculateFactor(val, min, max) {
+            if (val >= min && val <= max) return 1.0; // Perfect match
+            let diff = Math.min(Math.abs(val - min), Math.abs(val - max));
+            let range = (max - min) || 1;
+            let percentOff = diff / range;
+            
+            if (percentOff < 0.25) return 0.8;  // Medium-High yield
+            if (percentOff < 0.5) return 0.5;   // Medium yield
+            if (percentOff < 1.0) return 0.3;   // Low yield
+            return 0.1;                         // Failed crop
+        }
+
+        // 4. Main Prediction Function
+        function runPrediction() {
+            const btn = document.querySelector('.btn-predict');
+            const loader = document.getElementById('loader');
+            const resultsSection = document.getElementById('results-section');
+            
+            // UI State change: loading
+            resultsSection.style.display = 'none';
+            btn.style.display = 'none';
+            loader.style.display = 'block';
+
+            // Fetch Input Values
+            const rain = parseFloat(document.getElementById('rainfall').value) || 0;
+            const temp = parseFloat(document.getElementById('temperature').value) || 0;
+            const ph = parseFloat(document.getElementById('soilph').value) || 0;
+
+            // Fake processing delay for premium feel
+            setTimeout(() => {
+                let results = crops.map(crop => {
+                    let fRain = calculateFactor(rain, crop.optimal.rain[0], crop.optimal.rain[1]);
+                    let fTemp = calculateFactor(temp, crop.optimal.temp[0], crop.optimal.temp[1]);
+                    let fPh = calculateFactor(ph, crop.optimal.ph[0], crop.optimal.ph[1]);
+
+                    // Weightings: Rainfall (45%), Temp (35%), pH (20%)
+                    let finalFactor = (fRain * 0.45) + (fTemp * 0.35) + (fPh * 0.20);
+                    
+                    let yieldEst = Math.round(crop.maxYield * finalFactor);
+                    let profitEst = Math.round(yieldEst * crop.price);
+                    
+                    let yieldText = finalFactor >= 0.8 ? "High" : (finalFactor >= 0.5 ? "Medium" : "Low");
+
+                    return { ...crop, factor: finalFactor, yield: yieldEst, profit: profitEst, yieldText };
+                });
+
+                // Sort by highest profit
+                results.sort((a, b) => b.profit - a.profit);
+                let bestCrop = results[0];
+
+                renderOutput(results, bestCrop);
+
+                // UI State change: show results
+                loader.style.display = 'none';
+                btn.style.display = 'flex';
+                btn.innerHTML = 'Recalculate Insights ✨';
+                resultsSection.style.display = 'block';
+
+                // Scroll to results smoothly
+                setTimeout(() => {
+                    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+
+                // 5. Voice Announcement via Web Speech API
+                announceContent("The most profitable crop for your land is " + bestCrop.name + ". Estimated profit is " + bestCrop.profit.toLocaleString() + " rupees.");
+                
+            }, 1800); // 1.8s delay
+        }
+
+        // 6. Render the Cards and Stats
+        function renderOutput(results, bestCrop) {
+            const container = document.getElementById('cards-container');
+            container.innerHTML = '';
+
+            const maxYieldGlobal = Math.max(...results.map(r => r.yield));
+            const maxProfitGlobal = bestCrop.profit;
+
+            results.forEach((res, index) => {
+                let isBest = res.name === bestCrop.name;
+                // Calculate percentages for progress bars
+                let yieldPct = maxYieldGlobal > 0 ? (res.yield / maxYieldGlobal) * 100 : 0;
+                let profitPct = maxProfitGlobal > 0 ? (res.profit / maxProfitGlobal) * 100 : 0;
+
+                let card = document.createElement('div');
+                card.className = 'crop-card' + (isBest ? ' best' : '');
+                // Staggered slide up animation
+                card.style.animation = `slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.15}s both`;
+                
+                card.innerHTML = `
+                    <div class="card-icon">${res.icon}</div>
+                    <div class="card-name">${res.name}</div>
+                    <div class="card-stats">
+                        <div class="stat-row">
+                            <span class="stat-label">Est. Yield (<span style="color:#fff">${res.yieldText}</span>)</span>
+                            <span class="stat-value">${res.yield.toLocaleString()} <span style="font-size:0.8rem;color:#a3c2d1">kg</span></span>
+                        </div>
+                        <div class="progress-bg">
+                            <div class="progress-bar pb-yield" style="width: 0%" data-width="${yieldPct}%"></div>
+                        </div>
+                        
+                        <div class="stat-row" style="margin-top:15px;">
+                            <span class="stat-label">Proj. Profit</span>
+                            <span class="stat-value profit">₹${res.profit.toLocaleString()}</span>
+                        </div>
+                        <div class="progress-bg">
+                            <div class="progress-bar pb-profit" style="width: 0%" data-width="${profitPct}%"></div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Delay setting width to trigger CSS transition animation
+            setTimeout(() => {
+                document.querySelectorAll('.progress-bar').forEach(bar => {
+                    bar.style.width = bar.getAttribute('data-width');
+                });
+            }, 300);
+
+            // Update Header Announcement
+            document.getElementById('announcement').innerHTML = 
+                `Best Crop Recommendation: <span class="highlight">${bestCrop.name}</span> <span style="font-size: 2.8rem; vertical-align: middle;">${bestCrop.icon}</span>`;
+
+            // Draw Chart
+            renderBarChart(results);
+        }
+
+        // 7. Render Chart.js Animated Graph
+        function renderBarChart(results) {
+            const ctx = document.getElementById('profitChart').getContext('2d');
+            
+            if (chartInstance) {
+                chartInstance.destroy(); // Clear old chart
+            }
+
+            // Create gradient for bars
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(0, 255, 136, 0.9)');
+            gradient.addColorStop(1, 'rgba(0, 225, 255, 0.2)');
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: results.map(r => r.icon + " " + r.name),
+                    datasets: [{
+                        label: 'Estimated Profit (₹)',
+                        data: results.map(r => r.profit),
+                        backgroundColor: gradient,
+                        borderColor: '#00ff88',
+                        borderWidth: 2,
+                        borderRadius: 10,
+                        hoverBackgroundColor: '#ffd900',
+                        hoverBorderColor: '#fff',
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutBounce'
+                    },
+                    plugins: {
+                        legend: { 
+                            labels: { 
+                                color: '#fff', 
+                                font: { family: 'Outfit', size: 16, weight: '600' } 
+                            } 
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleFont: { family: 'Outfit', size: 16 },
+                            bodyFont: { family: 'Outfit', size: 14 },
+                            padding: 15,
+                            cornerRadius: 10,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return '₹' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { 
+                                color: '#a3c2d1',
+                                font: { family: 'Outfit', size: 12 },
+                                callback: function(value) { return '₹' + value.toLocaleString(); }
+                            },
+                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }
+                        },
+                        x: { 
+                            ticks: { color: '#fff', font: { family: 'Outfit', size: 15, weight: '600' } },
+                            grid: { display: false, drawBorder: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 8. View output system
+        function announceContent(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // stop current speaking
+                let msg = new SpeechSynthesisUtterance(text);
+                msg.rate = 1.0;
+                msg.pitch = 1.1;
+                msg.volume = 1.0;
+                // Try finding a good English voice
+                let voices = window.speechSynthesis.getVoices();
+                let enVoice = voices.find(v => v.lang.includes('en-IN') || v.lang.includes('en-GB') || v.lang.includes('en-US'));
+                if(enVoice) msg.voice = enVoice;
+                
+                window.speechSynthesis.speak(msg);
+            }
+        }
+        
+        // Ensure voices are loaded (Chrome quirk)
+        window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.getVoices();
+        };
+
+    </script>
+</body>
+</html>
